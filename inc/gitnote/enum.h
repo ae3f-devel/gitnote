@@ -1,0 +1,16 @@
+#ifndef gitnote_enum_h
+#define gitnote_enum_h
+
+enum GITNOTE_ {
+	GITNOTE_SUCCESS,
+	GITNOTE_NULL_ARG,
+	GITNOTE_ALLOC_FAILED,
+	GITNOTE_STRTOK_FAILED,
+	GITNOTE_STRSTR_FAILED
+};
+
+enum GITNOTE_OPT_ {
+	GITNOTE_OPT_INIT = 0x1
+};
+
+#endif
