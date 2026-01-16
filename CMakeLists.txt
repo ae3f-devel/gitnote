@@ -77,6 +77,7 @@ if(NOT TARGET ae3f::gitnote)
 	set(CMAKEDIR		cmake -E make_directory)
 	set(CMOVEDIR		cmake -E copy_directory)
 	set(PYSRCDIR		${CMAKE_CURRENT_SOURCE_DIR}/py)
+	set(PYBINDIR		${CMAKE_CURRENT_BINARY_DIR}/dist)
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		set(PYFLAG	--onefile --console --strip)
@@ -101,58 +102,57 @@ if(NOT TARGET ae3f::gitnote)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=get_snap ${PYSRCDIR}/get_snap.py
-		OUTPUT			${PYSRCDIR}/dist/get_snap
+		OUTPUT			${PYBINDIR}/get_snap
 		DEPENDS			${PYSRCDIR}/get_snap.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=set_snap ${PYSRCDIR}/set_snap.py
-		OUTPUT			${PYSRCDIR}/dist/set_snap
+		OUTPUT			${PYBINDIR}/set_snap
 		DEPENDS			${PYSRCDIR}/set_snap.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/mkdir.py
-		OUTPUT			${PYSRCDIR}/dist/mkdir
+		OUTPUT			${PYBINDIR}/mkdir
 		DEPENDS			${PYSRCDIR}/mkdir.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/rmdir.py
-		OUTPUT			${PYSRCDIR}/dist/rmdir
+		OUTPUT			${PYBINDIR}/rmdir
 		DEPENDS			${PYSRCDIR}/rmdir.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=modify_file ${PYSRCDIR}/modify_file.py
-		OUTPUT			${PYSRCDIR}/dist/modify_file
+		OUTPUT			${PYBINDIR}/modify_file
 		DEPENDS			${PYSRCDIR}/modify_file.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=touch ${PYSRCDIR}/touch.py
-		OUTPUT			${PYSRCDIR}/dist/touch
+		OUTPUT			${PYBINDIR}/touch
 		DEPENDS			${PYSRCDIR}/touch.py
 		)
 
 	add_custom_command(
 		COMMAND ${PYINSTALLER} ${PYFLAG} --name=rm ${PYSRCDIR}/rm.py
-		OUTPUT			${PYSRCDIR}/dist/rm
+		OUTPUT			${PYBINDIR}/rm
 		DEPENDS			${PYSRCDIR}/rm.py
 		)
 
 	add_custom_target(
 		gitnote-py
-		COMMAND	${CMAKEDIR} ${CMAKE_CURRENT_BINARY_DIR}/py/
-		COMMAND ${CMOVEDIR} ${PYSRCDIR}/dist ${CMAKE_CURRENT_BINARY_DIR}/py/
-		SOURCES	
-		${PYSRCDIR}/dist/get_snap
-		${PYSRCDIR}/dist/set_snap
-		${PYSRCDIR}/dist/mkdir
-		${PYSRCDIR}/dist/rmdir
-		${PYSRCDIR}/dist/modify_file
-		${PYSRCDIR}/dist/touch
-		${PYSRCDIR}/dist/rm
+		COMMAND	${CMAKEDIR} ${CMAKE_CURRENT_BINARY_DIR}/dist
+		DEPENDS
+		${PYBINDIR}/get_snap
+		${PYBINDIR}/set_snap
+		${PYBINDIR}/mkdir
+		${PYBINDIR}/rmdir
+		${PYBINDIR}/modify_file
+		${PYBINDIR}/touch
+		${PYBINDIR}/rm
 		)
 
 	add_dependencies(gitnote-raw gitnote-py)

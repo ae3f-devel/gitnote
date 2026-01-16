@@ -1,7 +1,4 @@
 build
 .*
-py/dist/
 py/build/
 *.spec
-
-*/__pycache__
