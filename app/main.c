@@ -23,6 +23,8 @@ int main(int argc, const char** argv) {
 
 	const_str_t BRANCH = "", BEGIN_COMMIT = "", BREAKPOINT_COMMIT = "";
 
+	B_gitnote_option_t	GITNOTE_OPT = 0;
+
 	switch((enum ARGC_)argc) {
 		char CH;
 		case ARGC_ZERO:
@@ -37,13 +39,19 @@ int main(int argc, const char** argv) {
 		ae2f_fallthrough;
 
 		case ARGC_BRANCH:
-		if(argv[ARG_BRANCH][0] == '-') {
-			/** heuristic --help */
-			goto LBL_DEFAULT;
+		if(argv[ARG_BRANCH][0] == '-' && argv[ARG_BRANCH][1] == '-') {
+			if(argv[ARG_BRANCH][2] == 'h') {
+				/** heuristic --help */
+				goto LBL_DEFAULT;
+			} else if(argv[ARG_BRANCH][2] == 'i') {
+				/** heuristic --init */
+				GITNOTE_OPT |= GITNOTE_OPT_INIT;
+			}
 		} else BRANCH = argv[ARG_BRANCH];
 		break;
 
 		case ARGC_PROGRAMME:
+
 		puts("Want to default as your current branch?");
 		scanf("%c", &CH);
 		fgetc(stdin);
@@ -58,19 +66,17 @@ LBL_DEFAULT:
 					"<--help|{branch}|{null}> "
 					"<{begin_commit}|{null}> "
 					"<{breakpoint}|{null}>"
-					);
+			    );
 			return 0;
 		}
 	}
 
-
-	printf("%s %s %s\n", BRANCH, BEGIN_COMMIT, BREAKPOINT_COMMIT);
 	gitnote_entry(
 			BRANCH
 			, BEGIN_COMMIT
 			, BREAKPOINT_COMMIT
-			, GITNOTE_OPT_INIT & 0
-			);
+			, GITNOTE_OPT
+		     );
 
 	return 0;
 }
