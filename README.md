@@ -20,3 +20,7 @@
 - the [git repository](https://github.com/git/git) you want to link
 - the [Notion api key](https://www.notion.so/profile/integrations)
 - the [page id to use as root](https://developers.notion.com/reference/retrieve-a-page)
+
+# what will happen
+- the `page id` you've fed to this programme will be directory page.
+- inside this, 

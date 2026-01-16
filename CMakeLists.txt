@@ -19,6 +19,9 @@ if(NOT TARGET ae2f::CoreScript)
 endif()
 
 if(NOT TARGET ae3f::gitnote)
+endif()
+
+if(NOT TARGET ae3f::gitnote)
 	if(GITNOTE_SHARED)
 		set(GITNOTE_SHARED 1)
 	else()
@@ -61,4 +64,96 @@ if(NOT TARGET ae3f::gitnote)
 
 	ae2f_UltraErrWERROR(gitnote-raw PRIVATE)
 	ae2f_UltraErrWERROR(libgitnote PRIVATE)
+
+	#######################################################################
+
+	set(GITNOTE_VENV_DIR	${CMAKE_BINARY_DIR}/${ae2f_submod}/.venv/python)
+	set(GITNOTE_PYTHON	python)
+
+	set(BINDIR		${GITNOTE_VENV_DIR}/bin)
+	set(PIP			${BINDIR}/pip)
+	set(PYINSTALLER		${BINDIR}/pyinstaller)
+
+	set(CMAKEDIR		cmake -E make_directory)
+	set(CMOVEDIR		cmake -E copy_directory)
+	set(PYSRCDIR		${CMAKE_CURRENT_SOURCE_DIR}/py)
+
+	if(CMAKE_BUILD_TYPE STREQUAL "Release")
+		set(PYFLAG	--onefile --console --strip)
+	else()
+		set(PYFLAG	--onefile --console)
+	endif()
+
+	if(NOT EXISTS ${GITNOTE_VENV_DIR})
+		message(STATUS "${GITNOTE_VENV_DIR} is not present.")
+
+		message(STATUS ${GITNOTE_PYTHON} -m venv ${GITNOTE_VENV_DIR})
+		execute_process(
+			COMMAND ${GITNOTE_PYTHON} -m venv ${GITNOTE_VENV_DIR}
+			)
+
+
+		message(STATUS ${PIP} install -q notion-client pyinstaller)
+		execute_process(
+			COMMAND ${PIP} install -q notion-client pyinstaller
+			)
+	endif()
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=get_snap ${PYSRCDIR}/get_snap.py
+		OUTPUT			${PYSRCDIR}/dist/get_snap
+		DEPENDS			${PYSRCDIR}/get_snap.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=set_snap ${PYSRCDIR}/set_snap.py
+		OUTPUT			${PYSRCDIR}/dist/set_snap
+		DEPENDS			${PYSRCDIR}/set_snap.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/mkdir.py
+		OUTPUT			${PYSRCDIR}/dist/mkdir
+		DEPENDS			${PYSRCDIR}/mkdir.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/rmdir.py
+		OUTPUT			${PYSRCDIR}/dist/rmdir
+		DEPENDS			${PYSRCDIR}/rmdir.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=modify_file ${PYSRCDIR}/modify_file.py
+		OUTPUT			${PYSRCDIR}/dist/modify_file
+		DEPENDS			${PYSRCDIR}/modify_file.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=touch ${PYSRCDIR}/touch.py
+		OUTPUT			${PYSRCDIR}/dist/touch
+		DEPENDS			${PYSRCDIR}/touch.py
+		)
+
+	add_custom_command(
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=rm ${PYSRCDIR}/rm.py
+		OUTPUT			${PYSRCDIR}/dist/rm
+		DEPENDS			${PYSRCDIR}/rm.py
+		)
+
+	add_custom_target(
+		gitnote-py
+		COMMAND	${CMAKEDIR} ${CMAKE_CURRENT_BINARY_DIR}/py/
+		COMMAND ${CMOVEDIR} ${PYSRCDIR}/dist ${CMAKE_CURRENT_BINARY_DIR}/py/
+		SOURCES	
+		${PYSRCDIR}/dist/get_snap
+		${PYSRCDIR}/dist/set_snap
+		${PYSRCDIR}/dist/mkdir
+		${PYSRCDIR}/dist/rmdir
+		${PYSRCDIR}/dist/modify_file
+		${PYSRCDIR}/dist/touch
+		${PYSRCDIR}/dist/rm
+		)
+
+	add_dependencies(gitnote-raw gitnote-py)
 endif()
