@@ -94,9 +94,9 @@ if(NOT TARGET ae3f::gitnote)
 			)
 
 
-		message(STATUS ${PIP} install -q notion-client pyinstaller)
+		message(STATUS ${PIP} install -q notion-client pyinstaller markdown2)
 		execute_process(
-			COMMAND ${PIP} install -q notion-client pyinstaller
+			COMMAND ${PIP} install -q notion-client pyinstaller markdown2
 			)
 	endif()
 
