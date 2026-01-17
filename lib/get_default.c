@@ -27,8 +27,11 @@ char* ae2f_retnew GITNOTE_ABI_IMPL ae2f_noexcept gitnote_get_default(
 				, rd_filename
 				, ""
 				, rd_process
-				, 0, c_argc, rd_argv))
+				, 0, c_argc, rd_argv)) {
+		assert(0 && "easyredir");
 		return 0;
+	}
+
 
 	return util_rdallfp(rd_filename);
 }

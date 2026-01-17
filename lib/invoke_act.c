@@ -3,26 +3,30 @@
 #include <assert.h>
 #include <string.h>
 
+
 #include "util/assert_unless.h"
 
 GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
-		char* ae2f_restrict const rd_tok, 
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
+		char* ae2f_restrict const rdwr_tok,
 		const int c_is_naked
 		) 
 {
 	char* ae2f_restrict	TOKEN;
 
-	assert_unless(rd_tok)	return GITNOTE_NULL_ARG;
+	assert_unless(rdwr_tok)	return GITNOTE_NULL_ARG;
 
-	if(c_is_naked)
-		return gitnote_act_creat(rd_tok);
+	if(c_is_naked) {
+		return gitnote_act_creat(rd_notion_api_key, rd_notion_page_id, rdwr_tok);
+	}
 
-	switch(*rd_tok) {
+	switch(*rdwr_tok) {
 		enum GITNOTE_ ERR;
 		case 'R': 
 		{
 			char* TOKEN2;
-			ae2f_expected_but_else(TOKEN = strstr(rd_tok, "\t"))
+			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRSTR_FAILED;
 
 			ae2f_expected_but_else(TOKEN2 = strstr(TOKEN + 1, "\t"))
@@ -30,33 +34,48 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 
 			*TOKEN = 0;
 			*TOKEN2 = 0;
-			ae2f_unexpected_but_if(ERR = gitnote_act_rm(TOKEN + 1))
+			ae2f_unexpected_but_if(ERR = gitnote_act_rm(
+						rd_notion_api_key
+						, rd_notion_page_id
+						, TOKEN + 1))
 				return ERR;
 
 
-			return gitnote_act_creat(TOKEN2 + 1);
+			return gitnote_act_creat(
+					rd_notion_api_key
+					, rd_notion_page_id
+					, TOKEN2 + 1);
 		}
 
 		case 'D':
 		{
-			ae2f_expected_but_else(TOKEN = strstr(rd_tok, "\t"))
+			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRSTR_FAILED;
 
-			return gitnote_act_rm(TOKEN + 1);
+			return gitnote_act_rm(
+					rd_notion_api_key
+					, rd_notion_page_id
+					, TOKEN + 1);
 		}
 		case 'A':
 		{
-			ae2f_expected_but_else(TOKEN = strstr(rd_tok, "\t"))
+			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRSTR_FAILED;
 
-			return gitnote_act_creat(TOKEN + 1);
+			return gitnote_act_creat(
+					rd_notion_api_key
+					, rd_notion_page_id
+					, TOKEN + 1);
 		}
 		case 'M':
 		{
-			ae2f_expected_but_else(TOKEN = strstr(rd_tok, "\t"))
+			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRTOK_FAILED;
 
-			return gitnote_act_mod(TOKEN + 1);
+			return gitnote_act_mod(
+					rd_notion_api_key
+					, rd_notion_page_id
+					, TOKEN + 1);
 		}
 		default:
 		assert(0);

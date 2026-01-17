@@ -38,10 +38,9 @@ CODE_FILE_EXTENSIONS = {
     ".css",
     ".scss",
     ".less",
-    ".md",
     ".markdown",
     ".rst",
-    ".tex",
+    ".tex"
 }
 
 LANG_MAP = {
@@ -77,10 +76,9 @@ LANG_MAP = {
     ".css": "css",
     ".scss": "scss",
     ".less": "less",
-    ".md": "markdown",
     ".markdown": "markdown",
     ".rst": "rst",
-    ".tex": "tex",
+    ".tex": "tex"
 }
 
 
@@ -169,7 +167,8 @@ def create_page_by_path(client, root_id, path, is_dir=False, verbose=False):
 
 def detect_file_type(filepath):
     """Determine if file should use code block or paragraph"""
-    _, ext = os.path.splitext(filepath.lower())
+    _, ext = os.path.splitext(filepath)
+    filename = os.path.basename(filepath)
 
     if ext in CODE_FILE_EXTENSIONS:
         return ("code", LANG_MAP.get(ext, "text"))

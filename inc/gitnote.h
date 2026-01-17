@@ -15,11 +15,25 @@
 #define GITNOTE_ABI_IMPL
 #endif
 
-ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_creat(const char* const rd_path);
-ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(const char* const rd_path);
-ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_mod(const char* const rd_path);
+ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_creat(
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
+		const char* ae2f_restrict const rd_path
+		);
+ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
+		const char* ae2f_restrict const rd_path
+		);
+ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_mod(
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
+		const char* ae2f_restrict const rd_path
+		);
 
 ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_invoke_act(
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
 		char* ae2f_restrict const rdwr_tok, 
 		const int c_is_naked
 		);
@@ -35,6 +49,8 @@ ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_entry(
 		const char* const rd_branch_name,
 		const gitnote_commit_hash_str_t rd_begin,
 		const gitnote_commit_hash_str_t rd_breakpoint,
+		const char* ae2f_restrict const rd_notion_api_key,
+		const char* ae2f_restrict const rd_notion_page_id,
 		const B_gitnote_option_t	c_flags
 		);
 

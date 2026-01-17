@@ -3,17 +3,21 @@
 
 enum ARG_ {
 	ARG_PROGRAMME,
+	ARG_NOTION_KEY,
+	ARG_NOTION_ROOT_ID,
 	ARG_BRANCH,
 	ARG_BEGIN_COMMIT,
-	ARG_BREAKPOINT_COMMIT
+	ARG_BREAKPOINT_COMMIT,
 };
 
 enum ARGC_ {
 	ARGC_ZERO,
 	ARGC_PROGRAMME,
+	ARGC_NOTION_KEY,
+	ARGC_NOTION_ROOT_ID,
 	ARGC_BRANCH,
 	ARGC_BEGIN_COMMIT,
-	ARGC_BREAKPOINT_COMMIT
+	ARGC_BREAKPOINT_COMMIT,
 };
 
 int main(int argc, const char** argv);
@@ -21,7 +25,12 @@ int main(int argc, const char** argv);
 int main(int argc, const char** argv) {
 	typedef const char* const_str_t;
 
-	const_str_t BRANCH = "", BEGIN_COMMIT = "", BREAKPOINT_COMMIT = "";
+	const_str_t 
+		BRANCH = ""
+		, BEGIN_COMMIT = ""
+		, BREAKPOINT_COMMIT = ""
+		, NOTION_TOKEN = ""
+		, NOTION_ROOT_PAGE_ID = "";
 
 	B_gitnote_option_t	GITNOTE_OPT = 0;
 
@@ -50,7 +59,7 @@ int main(int argc, const char** argv) {
 		} else BRANCH = argv[ARG_BRANCH];
 		break;
 
-		case ARGC_PROGRAMME:
+		case ARGC_NOTION_ROOT_ID:
 
 		puts("Want to default as your current branch?");
 		scanf("%c", &CH);
@@ -61,8 +70,10 @@ int main(int argc, const char** argv) {
 		} else {
 			ae2f_fallthrough;
 			default:
+			case ARGC_NOTION_KEY:
+			case ARGC_PROGRAMME:
 LBL_DEFAULT:
-			puts("./gitnote "
+			puts("./gitnote <notion-api-key> <notion-page-id-root> "
 					"<--help|{branch}|{null}> "
 					"<{begin_commit}|{null}> "
 					"<{breakpoint}|{null}>"
@@ -71,12 +82,16 @@ LBL_DEFAULT:
 		}
 	}
 
-	gitnote_entry(
+	NOTION_TOKEN = argv[ARG_NOTION_KEY];
+	NOTION_ROOT_PAGE_ID = argv[ARG_NOTION_ROOT_ID];
+
+	return (int)gitnote_entry(
 			BRANCH
 			, BEGIN_COMMIT
 			, BREAKPOINT_COMMIT
+			, NOTION_TOKEN
+			, NOTION_ROOT_PAGE_ID
 			, GITNOTE_OPT
-		     );
+			);
 
-	return 0;
 }
