@@ -252,7 +252,9 @@ def archive_page_recursive(client, page_id, verbose=False):
     verbose_log(verbose, f"Archived page: {page_id}")
 
 
-def update_page_content(client, page_id, content, file_type, verbose=False):
+def update_page_content(
+    client, page_id, content, file_type, verbose=False, filepath=None, root_page_id=None
+):
     """Clear existing blocks and append new content"""
     verbose_log(verbose, f"Updating content for page: {page_id}")
 
@@ -278,7 +280,13 @@ def update_page_content(client, page_id, content, file_type, verbose=False):
         verbose_log(verbose, f"Archived block: {block_id}")
 
     if block_type == "markdown":
-        notion_blocks = markdown_to_notion_blocks(content)
+        notion_blocks = markdown_to_notion_blocks(
+            content,
+            filepath=filepath,
+            root_page_id=root_page_id,
+            client=client,
+            verbose=verbose,
+        )
         verbose_log(verbose, f"Generated {len(notion_blocks)} blocks from markdown")
 
         for block in notion_blocks:
@@ -366,7 +374,45 @@ def verbose_log(message, verbose):
         print(f"[VERBOSE] {message}", file=sys.stderr)
 
 
-def parse_inline_markdown(text):
+def resolve_relative_path(current_file, relative_path):
+    """Resolve relative path based on current file's directory"""
+    if not current_file:
+        return None
+
+    current_dir = os.path.dirname(current_file)
+    resolved = os.path.join(current_dir, relative_path)
+    normalized = os.path.normpath(resolved)
+
+    if not normalized.startswith(os.path.normpath(os.getcwd())):
+        return None
+
+    return normalized
+
+
+def create_file_on_notion(client, root_page_id, filepath, verbose=False):
+    """Create a Notion page for a file (like touch.py)"""
+    if not filepath or not os.path.exists(filepath):
+        return None
+
+    filename = os.path.basename(filepath)
+    dir_path = os.path.dirname(filepath)
+
+    if dir_path and dir_path != ".":
+        relative_dir = os.path.relpath(dir_path, os.getcwd())
+        parent_id = create_page_by_path(
+            client, root_page_id, relative_dir, is_dir=True, verbose=verbose
+        )
+    else:
+        parent_id = root_page_id
+
+    new_page = create_page(client, parent_id, filename, is_dir=False)
+    verbose_log(verbose, f"Created Notion page for file: {filepath}")
+    return new_page["id"]
+
+
+def parse_inline_markdown(
+    text, filepath=None, root_page_id=None, client=None, verbose=False
+):
     """Convert inline markdown to Notion rich text objects"""
     if not text:
         return []
@@ -381,7 +427,13 @@ def parse_inline_markdown(text):
             end_pos = text.find("**", pos + 2)
             if end_pos != -1:
                 inner_text = text[pos + 2 : end_pos]
-                inner_rich = parse_inline_markdown(inner_text)
+                inner_rich = parse_inline_markdown(
+                    inner_text,
+                    filepath=filepath,
+                    root_page_id=root_page_id,
+                    client=client,
+                    verbose=verbose,
+                )
                 for rt in inner_rich:
                     if "annotations" not in rt:
                         rt["annotations"] = {}
@@ -395,7 +447,13 @@ def parse_inline_markdown(text):
             end_pos = text.find("*", pos + 1)
             if end_pos != -1:
                 inner_text = text[pos + 1 : end_pos]
-                inner_rich = parse_inline_markdown(inner_text)
+                inner_rich = parse_inline_markdown(
+                    inner_text,
+                    filepath=filepath,
+                    root_page_id=root_page_id,
+                    client=client,
+                    verbose=verbose,
+                )
                 for rt in inner_rich:
                     if "annotations" not in rt:
                         rt["annotations"] = {}
@@ -424,7 +482,13 @@ def parse_inline_markdown(text):
             end_pos = text.find("~~", pos + 2)
             if end_pos != -1:
                 inner_text = text[pos + 2 : end_pos]
-                inner_rich = parse_inline_markdown(inner_text)
+                inner_rich = parse_inline_markdown(
+                    inner_text,
+                    filepath=filepath,
+                    root_page_id=root_page_id,
+                    client=client,
+                    verbose=verbose,
+                )
                 for rt in inner_rich:
                     if "annotations" not in rt:
                         rt["annotations"] = {}
@@ -433,18 +497,121 @@ def parse_inline_markdown(text):
                 pos = end_pos + 2
                 continue
 
-        # Check for link [text](url)
+        # Check for image link ![alt](url)
+        if pos + 1 < len(text) and text[pos : pos + 2] == "![":
+            bracket_end = text.find("]", pos + 2)
+            if (
+                bracket_end != -1
+                and bracket_end + 1 < len(text)
+                and text[bracket_end + 1] == "("
+            ):
+                paren_end = text.find(")", bracket_end + 2)
+                if paren_end != -1:
+                    alt_text = text[pos + 2 : bracket_end]
+                    img_url = text[bracket_end + 2 : paren_end].strip()
+                    if img_url.startswith(("http://", "https://")):
+                        rich_text.append(
+                            {
+                                "type": "text",
+                                "text": {"content": alt_text or "image"},
+                                "link": {"url": img_url},
+                            }
+                        )
+                    else:
+                        if filepath and root_page_id and client:
+                            resolved_path = resolve_relative_path(filepath, img_url)
+                            if resolved_path and os.path.exists(resolved_path):
+                                create_file_on_notion(
+                                    client, root_page_id, resolved_path, verbose
+                                )
+                                verbose_log(
+                                    verbose, f"Created Notion page for: {resolved_path}"
+                                )
+
+                        rich_text.append(
+                            {
+                                "type": "text",
+                                "text": {
+                                    "content": f"{alt_text or 'image'} ({img_url})"
+                                },
+                            }
+                        )
+                    pos = paren_end + 1
+                    continue
+
+        # Check for regular link [text](url)
         if text[pos : pos + 1] == "[":
             bracket_end = text.find("]", pos + 1)
-            if bracket_end != -1 and text[bracket_end : bracket_end + 1] == "(":
-                paren_end = text.find(")", bracket_end + 1)
+            if (
+                bracket_end != -1
+                and bracket_end + 1 < len(text)
+                and text[bracket_end + 1] == "("
+            ):
+                paren_end = text.find(")", bracket_end + 2)
                 if paren_end != -1:
                     link_text = text[pos + 1 : bracket_end]
-                    link_url = text[bracket_end + 2 : paren_end]
-                    inner_rich = parse_inline_markdown(link_text)
-                    for rt in inner_rich:
-                        rt["link"] = {"url": link_url}
-                        rich_text.append(rt)
+                    link_url = text[bracket_end + 2 : paren_end].strip()
+                    if link_url.startswith(("http://", "https://")):
+                        inner_rich = parse_inline_markdown(
+                            link_text,
+                            filepath=filepath,
+                            root_page_id=root_page_id,
+                            client=client,
+                            verbose=verbose,
+                        )
+                        for rt in inner_rich:
+                            rt["link"] = {"url": link_url}
+                            rich_text.append(rt)
+                    else:
+                        if filepath and root_page_id and client:
+                            resolved_path = resolve_relative_path(filepath, link_url)
+                            if resolved_path and os.path.exists(resolved_path):
+                                create_file_on_notion(
+                                    client, root_page_id, resolved_path, verbose
+                                )
+                                verbose_log(
+                                    verbose, f"Created Notion page for: {resolved_path}"
+                                )
+
+                        inner_rich = parse_inline_markdown(
+                            link_text,
+                            filepath=filepath,
+                            root_page_id=root_page_id,
+                            client=client,
+                            verbose=verbose,
+                        )
+                        for rt in inner_rich:
+                            rich_text.append(rt)
+                        rich_text.append(
+                            {"type": "text", "text": {"content": f" ({link_url})"}}
+                        )
+                    pos = paren_end + 1
+                    continue
+
+        # Check for regular link [text](url)
+        if text[pos : pos + 1] == "[":
+            bracket_end = text.find("]", pos + 1)
+            if (
+                bracket_end != -1
+                and bracket_end + 1 < len(text)
+                and text[bracket_end + 1] == "("
+            ):
+                paren_end = text.find(")", bracket_end + 2)
+                if paren_end != -1:
+                    link_text = text[pos + 1 : bracket_end]
+                    link_url = text[bracket_end + 2 : paren_end].strip()
+                    if link_url.startswith(("http://", "https://")):
+                        inner_rich = parse_inline_markdown(link_text)
+                        for rt in inner_rich:
+                            rt["link"] = {"url": link_url}
+                            rich_text.append(rt)
+                    else:
+                        inner_rich = parse_inline_markdown(link_text)
+                        for rt in inner_rich:
+                            rich_text.append(rt)
+                        rich_text.append(
+                            {"type": "text", "text": {"content": f" ({link_url})"}}
+                        )
                     pos = paren_end + 1
                     continue
 
@@ -464,7 +631,9 @@ def parse_inline_markdown(text):
     return rich_text
 
 
-def markdown_to_notion_blocks(markdown_content):
+def markdown_to_notion_blocks(
+    markdown_content, filepath=None, root_page_id=None, client=None, verbose=False
+):
     """Convert markdown content to Notion blocks"""
     if not markdown_content:
         return []
@@ -491,7 +660,13 @@ def markdown_to_notion_blocks(markdown_content):
                     "object": "block",
                     "type": f"heading_{min(level, 3)}",
                     f"heading_{min(level, 3)}": {
-                        "rich_text": parse_inline_markdown(text)
+                        "rich_text": parse_inline_markdown(
+                            text,
+                            filepath=filepath,
+                            root_page_id=root_page_id,
+                            client=client,
+                            verbose=verbose,
+                        )
                     },
                 }
             )

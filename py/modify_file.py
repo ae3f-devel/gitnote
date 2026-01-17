@@ -23,7 +23,15 @@ def main():
     content = read_file_content(args.path)
     file_type = detect_file_type(args.path)
 
-    update_page_content(client, page_id, content, file_type, args.verbose)
+    update_page_content(
+        client,
+        page_id,
+        content,
+        file_type,
+        args.verbose,
+        filepath=args.path,
+        root_page_id=args.root_page_id,
+    )
 
     if args.verbose:
         print(f"Modified file: {args.path}")
