@@ -14,7 +14,7 @@ def main():
 
     client = init_notion_client(args.api_key)
 
-    page_id = find_page_by_path(client, args.root_page_id, args.path, args.verbose)
+    page_id, _ = find_page_by_path(client, args.root_page_id, args.path, args.verbose)
     if not page_id:
         if args.verbose:
             print(f"Directory not found: {args.path}")

@@ -13,7 +13,7 @@ def main():
 
     client = init_notion_client(args.api_key)
 
-    git_page_id = find_page_by_path(client, args.root_page_id, ".git", args.verbose)
+    git_page_id, _ = find_page_by_path(client, args.root_page_id, ".git", args.verbose)
     if not git_page_id:
         if args.verbose:
             print("No .git page found")

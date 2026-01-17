@@ -2,3 +2,4 @@ build
 .*
 py/build/
 *.spec
+*__pycache__*

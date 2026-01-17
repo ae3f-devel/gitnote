@@ -14,9 +14,12 @@ def main():
 
     client = init_notion_client(args.api_key)
 
-    git_page_id = create_page_by_path(
-        client, args.root_page_id, ".git", is_dir=False, verbose=args.verbose
-    )
+    git_page_id, _ = find_page_by_path(clinet, args.root_page_id, ".git", is_dir=False, verbose=args.verbose)
+
+    if not git_page_id:
+        git_page_id = create_page_by_path(
+            client, args.root_page_id, ".git", is_dir=False, verbose=args.verbose
+        )
 
     update_page_content(
         client, git_page_id, args.hash, ("paragraph", None), args.verbose

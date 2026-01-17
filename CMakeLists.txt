@@ -119,7 +119,7 @@ if(NOT TARGET ae3f::gitnote)
 		)
 
 	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/rmdir.py
+		COMMAND ${PYINSTALLER} ${PYFLAG} --name=rmdir ${PYSRCDIR}/rmdir.py
 		OUTPUT			${PYBINDIR}/rmdir
 		DEPENDS			${PYSRCDIR}/rmdir.py
 		)
