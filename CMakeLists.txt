@@ -23,7 +23,6 @@ endif()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
-
 if(NOT TARGET ae3f::gitnote)
 	if(GITNOTE_SHARED)
 		set(GITNOTE_SHARED 1)
@@ -49,33 +48,8 @@ if(NOT TARGET ae3f::gitnote)
 		${CMAKE_CURRENT_SOURCE_DIR}/lib/cfg/.TMPFILE_NAME.h
 		)
 
-	file(GLOB_RECURSE libgitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.c")
-
 	ae2f_CoreLibFetchX_DNS(ae3f ae3f easyredir master codeberg.org)
-	add_library(gitnote-common INTERFACE)
-	add_library(libgitnote ${libgitnote_sources})
-	add_library(gluegitnote ${CMAKE_CURRENT_SOURCE_DIR}/pyglue/act.c)
-
-	add_executable(gitnote-raw app/main.c ${libgitnote_sources})
-	add_executable(ae3f::gitnote-raw ALIAS gitnote-raw)
-
-	target_link_libraries(gitnote-common		INTERFACE ae3f::libeasyredir)
-	target_link_libraries(gitnote-raw PRIVATE libgitnote)
-	target_link_libraries(libgitnote PRIVATE gluegitnote)
-
-	target_include_directories(gitnote-common	INTERFACE inc)
-	target_include_directories(gitnote-common	INTERFACE lib)
-
-	target_include_directories(gluegitnote	PRIVATE	${CMAKE_CURRENT_BINARY_DIR})
-	target_include_directories(gluegitnote	PRIVATE ${Python3_INCLUDE_DIRS})
-	target_link_libraries(gluegitnote	PRIVATE ${Python3_LIBRARIES})
-	target_link_libraries(libgitnote	PUBLIC gitnote-common)
-	target_link_libraries(gluegitnote	PUBLIC gitnote-common)
-	target_link_libraries(gitnote-raw	PUBLIC gitnote-common)
-
-	ae2f_UltraErrWERROR(gitnote-raw PRIVATE)
-	ae2f_UltraErrWERROR(libgitnote PRIVATE)
-
+	
 	#######################################################################
 
 	set(GITNOTE_VENV_DIR	${CMAKE_BINARY_DIR}/${ae2f_submod}/.venv/python)
@@ -88,7 +62,7 @@ if(NOT TARGET ae3f::gitnote)
 	set(CMAKEDIR		cmake -E make_directory)
 	set(CMOVEDIR		cmake -E copy_directory)
 	set(PYSRCDIR		${CMAKE_CURRENT_SOURCE_DIR}/py)
-	set(PYBINDIR		${CMAKE_CURRENT_BINARY_DIR}/dist)
+	set(PYBINDIR		${CMAKE_CURRENT_BINARY_DIR})
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		set(PYFLAG	--onefile --console --strip)
@@ -118,6 +92,7 @@ if(NOT TARGET ae3f::gitnote)
 		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils.pyx ${PYBINDIR}/
 		COMMAND	${CMAKE_COMMAND} -E env TARDIR=${PYBINDIR}/ ${GITNOTE_VENV_DIR}/bin/python ${PYSRCDIR}/setup.py 
 		build_ext --inplace
+		COMMAND	${CMAKE_COMMAND} -E rename ${PYBINDIR}/utils.c ${PYBINDIR}/utils.h
 		
 		WORKING_DIRECTORY	${PYBINDIR}	
 		SOURCES
@@ -127,10 +102,40 @@ if(NOT TARGET ae3f::gitnote)
 		BYPRODUCTS
 		${PYBINDIR}/utils.pyx
 		${PYBINDIR}/utils.so
-		${PYBINDIR}/utils.c
+		${PYBINDIR}/utils.h
 
 		VERBATIM
 		)
 
-	add_dependencies(gitnote-raw gitnote-py)
+	#######################################################################
+
+	file(GLOB_RECURSE libgitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.c")
+	file(GLOB_RECURSE gluegitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/pyglue/*.c")
+	add_library(gitnote-common INTERFACE)
+	add_library(libgitnote ${libgitnote_sources} ${PYBINDIR}/utils.h)
+	add_library(gluegitnote ${gluegitnote_sources} ${PYBINDIR}/utils.h)
+
+	add_executable(gitnote-raw app/main.c ${libgitnote_sources})
+	add_executable(ae3f::gitnote-raw ALIAS gitnote-raw)
+
+	target_link_libraries(gitnote-common		INTERFACE ae3f::libeasyredir)
+	target_link_libraries(gitnote-raw PRIVATE libgitnote)
+	target_link_libraries(libgitnote PRIVATE gluegitnote)
+
+	target_include_directories(gitnote-common	INTERFACE inc)
+	target_include_directories(gitnote-common	INTERFACE lib)
+
+	target_include_directories(gluegitnote	PRIVATE	${CMAKE_CURRENT_BINARY_DIR})
+	target_include_directories(gluegitnote	PRIVATE ${Python3_INCLUDE_DIRS})
+	target_link_libraries(gluegitnote	PRIVATE ${Python3_LIBRARIES})
+	target_link_libraries(libgitnote	PUBLIC gitnote-common)
+	target_link_libraries(gluegitnote	PUBLIC gitnote-common)
+	target_link_libraries(gitnote-raw	PUBLIC gitnote-common)
+
+	ae2f_UltraErrWERROR(gitnote-raw PRIVATE)
+	ae2f_UltraErrWERROR(libgitnote PRIVATE)
+
+	#######################################################################
+
+	add_dependencies(gitnote-common gitnote-py)
 endif()

@@ -1,3 +1,5 @@
+# distutils: language=c
+
 import os
 import sys
 import re

@@ -5,6 +5,10 @@ enum ARG_ {
 	ARG_PROGRAMME,
 	ARG_NOTION_KEY,
 	ARG_NOTION_ROOT_ID,
+
+	/*** optional */
+
+	ARG_VENV,
 	ARG_BRANCH,
 	ARG_BEGIN_COMMIT,
 	ARG_BREAKPOINT_COMMIT,
@@ -15,6 +19,10 @@ enum ARGC_ {
 	ARGC_PROGRAMME,
 	ARGC_NOTION_KEY,
 	ARGC_NOTION_ROOT_ID,
+
+	/*** optional **/
+
+	ARGC_VENV,
 	ARGC_BRANCH,
 	ARGC_BEGIN_COMMIT,
 	ARGC_BREAKPOINT_COMMIT,
@@ -30,7 +38,8 @@ int main(int argc, const char** argv) {
 		, BEGIN_COMMIT = ""
 		, BREAKPOINT_COMMIT = ""
 		, NOTION_TOKEN = ""
-		, NOTION_ROOT_PAGE_ID = "";
+		, NOTION_ROOT_PAGE_ID = ""
+		, VENV = "";
 
 	B_gitnote_option_t	GITNOTE_OPT = 0;
 
@@ -38,6 +47,18 @@ int main(int argc, const char** argv) {
 		char CH;
 		case ARGC_ZERO:
 		return -1;
+
+		default:
+		case ARGC_NOTION_KEY:
+		case ARGC_PROGRAMME:
+LBL_DEFAULT:
+		puts("./gitnote <notion-api-key> <notion-page-id-root> "
+				"<--help|{venv}|{null}> "
+				"<{branch}|{null}> "
+				"<{begin_commit}|{null}> "
+				"<{breakpoint}|{null}>"
+		    );
+		return 0;
 
 		case ARGC_BREAKPOINT_COMMIT:
 		BREAKPOINT_COMMIT = argv[ARG_BREAKPOINT_COMMIT];
@@ -67,19 +88,12 @@ int main(int argc, const char** argv) {
 
 		/** query for something */
 		if(CH == 'y' || CH == 'Y') {
-		} else {
-			ae2f_fallthrough;
-			default:
-			case ARGC_NOTION_KEY:
-			case ARGC_PROGRAMME:
-LBL_DEFAULT:
-			puts("./gitnote <notion-api-key> <notion-page-id-root> "
-					"<--help|{branch}|{null}> "
-					"<{begin_commit}|{null}> "
-					"<{breakpoint}|{null}>"
-			    );
-			return 0;
-		}
+		} else { goto LBL_DEFAULT; }
+
+		ae2f_fallthrough;
+
+		case ARGC_VENV:
+		VENV = "./.gitnote-venv";
 	}
 
 	NOTION_TOKEN = argv[ARG_NOTION_KEY];
@@ -92,6 +106,7 @@ LBL_DEFAULT:
 			, NOTION_TOKEN
 			, NOTION_ROOT_PAGE_ID
 			, GITNOTE_OPT
+			, VENV
 			);
 
 }

@@ -2,6 +2,7 @@
 
 #include <gitnote.h>
 #include <gitnote/enum.h>
+#include <gitnote/pyglue.h>
 
 #include "./util/assert_unless.h"
 #include "./util/rdallfp.h"
@@ -16,7 +17,8 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		const gitnote_commit_hash_str_t rd_breakpoint,
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
-		const B_gitnote_option_t	c_flags
+		const B_gitnote_option_t	c_flags,
+		const char* const rd_venv
 		)
 {
 	struct {
@@ -38,9 +40,13 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 
 	/****************************************************************************/
 
+	if(gitnote_pyglue_init(rd_venv))
+		return GITNOTE_PYINIT_FAILED;
+
 	assert_unless(rd_branch_name)		return GITNOTE_NULL_ARG;
 	assert_unless(rd_begin)			return GITNOTE_NULL_ARG;
 	assert_unless(rd_breakpoint)		return GITNOTE_NULL_ARG;
+	assert_unless(rd_venv)			return GITNOTE_NULL_ARG;
 
 
 	unless(*(BRANCH.m_str = rd_branch_name))	{
@@ -152,7 +158,8 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 							rd_notion_api_key
 							, rd_notion_page_id
 							, TOKEN
-							, CONTEXT.m_is_naked)))
+							, CONTEXT.m_is_naked
+							)))
 				goto LBL_NONGOOD;
 
 			TOKEN = strtok(ae2f_NIL, "\n");

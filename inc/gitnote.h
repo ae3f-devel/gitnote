@@ -4,16 +4,8 @@
 #include <ae2f/Keys.h>
 #include <ae2f/Guide.h>
 
-#include "./gitnote/.link.h"
+#include "./gitnote/link.h"
 #include "./gitnote/enum.h"
-
-#if GITNOTE_SHARED
-#define GITNOTE_ABI_DECL	ae2f_decl
-#define GITNOTE_ABI_IMPL	ae2f_impl
-#else
-#define GITNOTE_ABI_DECL
-#define GITNOTE_ABI_IMPL
-#endif
 
 ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_creat(
 		const char* ae2f_restrict const rd_notion_api_key,
@@ -51,7 +43,8 @@ ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_entry(
 		const gitnote_commit_hash_str_t rd_breakpoint,
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
-		const B_gitnote_option_t	c_flags
+		const B_gitnote_option_t	c_flags,
+		const char* const rd_venv
 		);
 
 /** get default branch */
