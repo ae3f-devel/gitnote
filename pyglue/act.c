@@ -1,8 +1,9 @@
 #include <gitnote.h>
 #include <stdio.h>
 #include <easyredir.h>
+#include <dist/utils.c>
 
-GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_creat(
+ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path
@@ -52,7 +53,7 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 
 	return GITNOTE_SUCCESS;
 }
-GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_mod(
+ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path

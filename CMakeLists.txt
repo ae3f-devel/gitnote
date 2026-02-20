@@ -21,6 +21,9 @@ endif()
 if(NOT TARGET ae3f::gitnote)
 endif()
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+
 if(NOT TARGET ae3f::gitnote)
 	if(GITNOTE_SHARED)
 		set(GITNOTE_SHARED 1)
@@ -49,18 +52,26 @@ if(NOT TARGET ae3f::gitnote)
 	file(GLOB_RECURSE libgitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.c")
 
 	ae2f_CoreLibFetchX_DNS(ae3f ae3f easyredir master codeberg.org)
+	add_library(gitnote-common INTERFACE)
 	add_library(libgitnote ${libgitnote_sources})
+	add_library(gluegitnote ${CMAKE_CURRENT_SOURCE_DIR}/pyglue/act.c)
 
 	add_executable(gitnote-raw app/main.c ${libgitnote_sources})
 	add_executable(ae3f::gitnote-raw ALIAS gitnote-raw)
 
-	target_link_libraries(gitnote-raw		PRIVATE ae3f::libeasyredir)
-	target_link_libraries(libgitnote	PRIVATE ae3f::libeasyredir)
+	target_link_libraries(gitnote-common		INTERFACE ae3f::libeasyredir)
+	target_link_libraries(gitnote-raw PRIVATE libgitnote)
+	target_link_libraries(libgitnote PRIVATE gluegitnote)
 
-	target_include_directories(gitnote-raw	PRIVATE inc)
-	target_include_directories(gitnote-raw	PRIVATE lib)
-	target_include_directories(libgitnote	PRIVATE lib)
-	target_include_directories(libgitnote	PRIVATE inc)
+	target_include_directories(gitnote-common	INTERFACE inc)
+	target_include_directories(gitnote-common	INTERFACE lib)
+
+	target_include_directories(gluegitnote	PRIVATE	${CMAKE_CURRENT_BINARY_DIR})
+	target_include_directories(gluegitnote	PRIVATE ${Python3_INCLUDE_DIRS})
+	target_link_libraries(gluegitnote	PRIVATE ${Python3_LIBRARIES})
+	target_link_libraries(libgitnote	PUBLIC gitnote-common)
+	target_link_libraries(gluegitnote	PUBLIC gitnote-common)
+	target_link_libraries(gitnote-raw	PUBLIC gitnote-common)
 
 	ae2f_UltraErrWERROR(gitnote-raw PRIVATE)
 	ae2f_UltraErrWERROR(libgitnote PRIVATE)
@@ -94,65 +105,31 @@ if(NOT TARGET ae3f::gitnote)
 			)
 
 
-		message(STATUS ${PIP} install -q notion-client pyinstaller markdown2)
+		message(STATUS ${PIP} install -q notion-client pyinstaller markdown2 cython)
 		execute_process(
-			COMMAND ${PIP} install -q notion-client pyinstaller markdown2
+			COMMAND ${PIP} install -q notion-client pyinstaller markdown2 cython
 			)
 	endif()
 
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=get_snap ${PYSRCDIR}/get_snap.py
-		OUTPUT			${PYBINDIR}/get_snap
-		DEPENDS			${PYSRCDIR}/get_snap.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=set_snap ${PYSRCDIR}/set_snap.py
-		OUTPUT			${PYBINDIR}/set_snap
-		DEPENDS			${PYSRCDIR}/set_snap.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=mkdir ${PYSRCDIR}/mkdir.py
-		OUTPUT			${PYBINDIR}/mkdir
-		DEPENDS			${PYSRCDIR}/mkdir.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=rmdir ${PYSRCDIR}/rmdir.py
-		OUTPUT			${PYBINDIR}/rmdir
-		DEPENDS			${PYSRCDIR}/rmdir.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=modify_file ${PYSRCDIR}/modify_file.py
-		OUTPUT			${PYBINDIR}/modify_file
-		DEPENDS			${PYSRCDIR}/modify_file.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=touch ${PYSRCDIR}/touch.py
-		OUTPUT			${PYBINDIR}/touch
-		DEPENDS			${PYSRCDIR}/touch.py
-		)
-
-	add_custom_command(
-		COMMAND ${PYINSTALLER} ${PYFLAG} --name=rm ${PYSRCDIR}/rm.py
-		OUTPUT			${PYBINDIR}/rm
-		DEPENDS			${PYSRCDIR}/rm.py
-		)
+	execute_process(COMMAND ${CMAKEDIR} ${PYBINDIR})
 
 	add_custom_target(
-		gitnote-py
-		COMMAND	${CMAKEDIR} ${CMAKE_CURRENT_BINARY_DIR}/dist
-		DEPENDS
-		${PYBINDIR}/get_snap
-		${PYBINDIR}/set_snap
-		${PYBINDIR}/mkdir
-		${PYBINDIR}/rmdir
-		${PYBINDIR}/modify_file
-		${PYBINDIR}/touch
-		${PYBINDIR}/rm
+		gitnote-py ALL
+		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils.pyx ${PYBINDIR}/
+		COMMAND	${CMAKE_COMMAND} -E env TARDIR=${PYBINDIR}/ ${GITNOTE_VENV_DIR}/bin/python ${PYSRCDIR}/setup.py 
+		build_ext --inplace
+		
+		WORKING_DIRECTORY	${PYBINDIR}	
+		SOURCES
+		${PYSRCDIR}/setup.py
+		${PYSRCDIR}/utils.pyx
+
+		BYPRODUCTS
+		${PYBINDIR}/utils.pyx
+		${PYBINDIR}/utils.so
+		${PYBINDIR}/utils.c
+
+		VERBATIM
 		)
 
 	add_dependencies(gitnote-raw gitnote-py)
