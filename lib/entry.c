@@ -40,13 +40,13 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 
 	/****************************************************************************/
 
-	if(gitnote_pyglue_init(rd_venv))
-		return GITNOTE_PYINIT_FAILED;
-
 	assert_unless(rd_branch_name)		return GITNOTE_NULL_ARG;
 	assert_unless(rd_begin)			return GITNOTE_NULL_ARG;
 	assert_unless(rd_breakpoint)		return GITNOTE_NULL_ARG;
 	assert_unless(rd_venv)			return GITNOTE_NULL_ARG;
+
+	if(gitnote_pyglue_init(rd_venv))
+		return GITNOTE_PYINIT_FAILED;
 
 
 	unless(*(BRANCH.m_str = rd_branch_name))	{
@@ -62,8 +62,6 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		CONTEXT.m_is_alloc_branch = 1;
 		strtok(BRANCH.m_buf, "\n");
 	}
-
-
 
 #define	jmpret(a)	{ STATE_ON_ERR = (a); goto LBL_NONGOOD; }
 
@@ -148,6 +146,7 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 
 		CONTEXT.m_is_alloc_lsfiles = 1;
 	}
+
 
 	/****************************************************************************/
 	{

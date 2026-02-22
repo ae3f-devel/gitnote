@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <string.h>
 
-
 #include "util/assert_unless.h"
 
 GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(

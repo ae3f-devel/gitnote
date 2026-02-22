@@ -1,3 +1,5 @@
+# distutils: language=c
+
 cimport cython
 
 from notion_client import Client

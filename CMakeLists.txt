@@ -52,7 +52,7 @@ if(NOT TARGET ae3f::gitnote)
 	
 	#######################################################################
 
-	set(GITNOTE_VENV_DIR	${CMAKE_BINARY_DIR}/${ae2f_submod}/.venv/python)
+	set(GITNOTE_VENV_DIR	${CMAKE_BINARY_DIR}/.venv)
 	set(GITNOTE_PYTHON	python)
 
 	set(BINDIR		${GITNOTE_VENV_DIR}/bin)
@@ -90,6 +90,7 @@ if(NOT TARGET ae3f::gitnote)
 	add_custom_target(
 		gitnote-py ALL
 		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils.pyx ${PYBINDIR}/
+		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils.py ${PYBINDIR}/
 		COMMAND	${CMAKE_COMMAND} -E env TARDIR=${PYBINDIR}/ ${GITNOTE_VENV_DIR}/bin/python ${PYSRCDIR}/setup.py 
 		build_ext --inplace
 		COMMAND	${CMAKE_COMMAND} -E rename ${PYBINDIR}/utils.c ${PYBINDIR}/utils.h
@@ -100,6 +101,7 @@ if(NOT TARGET ae3f::gitnote)
 		${PYSRCDIR}/utils.pyx
 
 		BYPRODUCTS
+		${PYBINDIR}/utils.py
 		${PYBINDIR}/utils.pyx
 		${PYBINDIR}/utils.so
 		${PYBINDIR}/utils.h
@@ -111,6 +113,8 @@ if(NOT TARGET ae3f::gitnote)
 
 	file(GLOB_RECURSE libgitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/lib/*.c")
 	file(GLOB_RECURSE gluegitnote_sources "${CMAKE_CURRENT_SOURCE_DIR}/pyglue/*.c")
+	file(GLOB_RECURSE vpylib ${GITNOTE_VENV_DIR}/lib/*)
+
 	add_library(gitnote-common INTERFACE)
 	add_library(libgitnote ${libgitnote_sources} ${PYBINDIR}/utils.h)
 	add_library(gluegitnote ${gluegitnote_sources} ${PYBINDIR}/utils.h)

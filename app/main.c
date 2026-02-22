@@ -8,8 +8,8 @@ enum ARG_ {
 
 	/*** optional */
 
-	ARG_VENV,
 	ARG_BRANCH,
+	ARG_VENV,
 	ARG_BEGIN_COMMIT,
 	ARG_BREAKPOINT_COMMIT,
 };
@@ -22,8 +22,8 @@ enum ARGC_ {
 
 	/*** optional **/
 
-	ARGC_VENV,
 	ARGC_BRANCH,
+	ARGC_VENV,
 	ARGC_BEGIN_COMMIT,
 	ARGC_BREAKPOINT_COMMIT,
 };
@@ -39,7 +39,7 @@ int main(int argc, const char** argv) {
 		, BREAKPOINT_COMMIT = ""
 		, NOTION_TOKEN = ""
 		, NOTION_ROOT_PAGE_ID = ""
-		, VENV = "";
+		, VENV = "./.venv";
 
 	B_gitnote_option_t	GITNOTE_OPT = 0;
 
@@ -68,6 +68,10 @@ LBL_DEFAULT:
 		BEGIN_COMMIT = argv[ARG_BEGIN_COMMIT];
 		ae2f_fallthrough;
 
+		case ARGC_VENV:
+		VENV = argv[ARG_VENV];
+		ae2f_fallthrough;
+
 		case ARGC_BRANCH:
 		if(argv[ARG_BRANCH][0] == '-' && argv[ARG_BRANCH][1] == '-') {
 			if(argv[ARG_BRANCH][2] == 'h') {
@@ -89,15 +93,14 @@ LBL_DEFAULT:
 		/** query for something */
 		if(CH == 'y' || CH == 'Y') {
 		} else { goto LBL_DEFAULT; }
-
-		ae2f_fallthrough;
-
-		case ARGC_VENV:
-		VENV = "./.gitnote-venv";
 	}
 
 	NOTION_TOKEN = argv[ARG_NOTION_KEY];
 	NOTION_ROOT_PAGE_ID = argv[ARG_NOTION_ROOT_ID];
+
+	puts(NOTION_TOKEN);
+	puts(NOTION_ROOT_PAGE_ID);
+	puts(VENV);
 
 	return (int)gitnote_entry(
 			BRANCH

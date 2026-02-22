@@ -27,7 +27,6 @@ setup(
     name="utils",
     ext_modules=cythonize(
         "utils.pyx",
-        language="c",
         compiler_directives={
             "language_level": "3",
             "boundscheck": False,
