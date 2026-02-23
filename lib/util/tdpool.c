@@ -52,7 +52,7 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_	gitnote_tdpool_join(void)
 
 	size_t IDX = __count_tdpool;
 
-	while(IDX--) {
+	while(IDX-- && c89atomic_load_64(&__tdpool[IDX].m_info.m_atom)) {
 		_ae2fsys_join_thrd_imp(L, RET, STAT, __tdpool[IDX].m_info.m_thrd);
 		if(!STAT_RET && !STAT && RET) {
 			STAT_RET = GITNOTE_THREAD_FAILED;
@@ -73,7 +73,6 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_tdpool_push(
 		const char* ae2f_restrict rd_path
 		)
 {
-	enum AE2FSYS_THRD_	RET;
 
 	size_t IDX = __count_tdpool;
 
@@ -82,6 +81,8 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_tdpool_push(
 
 	while(IDX-- && !c89atomic_load_64(&__tdpool[IDX].m_info.m_atom)) {
 		ae2fsys_thrdres_t	STAT = 0;
+		enum AE2FSYS_THRD_	RET;
+
 		_ae2fsys_join_thrd_imp(L, RET, STAT, __tdpool[IDX].m_info.m_thrd);
 		if(RET) {
 			return STAT ? (enum GITNOTE_)STAT : GITNOTE_THREAD_FAILED;

@@ -88,25 +88,20 @@ if(NOT TARGET ae3f::gitnote)
 
 	execute_process(COMMAND ${CMAKEDIR} ${PYBINDIR})
 
-	add_custom_target(
-		gitnote-py ALL
+	add_custom_command(
 		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils.pyx ${PYBINDIR}/
-		COMMAND	${CMAKE_COMMAND} -E copy ${PYSRCDIR}/utils_impl.py ${PYBINDIR}/
 		COMMAND	${CMAKE_COMMAND} -E env TARDIR=${PYBINDIR}/ ${GITNOTE_VENV_DIR}/bin/python ${PYSRCDIR}/setup.py 
 		build_ext --inplace
 		COMMAND	${CMAKE_COMMAND} -E rename ${PYBINDIR}/utils.c ${PYBINDIR}/utils.h
+		COMMAND ${CMAKE_COMMAND} -E remove ${PYBINDIR}/utils.pyx
+		COMMAND ${CMAKE_COMMAND} -E remove ${PYBINDIR}/utils.so
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PYBINDIR}/build
 		
 		WORKING_DIRECTORY	${PYBINDIR}
-		SOURCES
-		${PYSRCDIR}/setup.py
-		${PYSRCDIR}/utils.pyx
-		${PYSRCDIR}/utils_impl.py
+		DEPENDS			${PYSRCDIR}/setup.py 
+					${PYSRCDIR}/utils.pyx
 
-		BYPRODUCTS
-		${PYBINDIR}/utils_impl.py
-		${PYBINDIR}/utils.pyx
-		${PYBINDIR}/utils.so
-		${PYBINDIR}/utils.h
+		OUTPUT ${PYBINDIR}/utils.h
 
 		VERBATIM
 		)

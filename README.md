@@ -24,3 +24,8 @@
 # what will happen
 - the `page id` you've fed to this programme will be directory page.
 - inside this, the repository will be cloned to the remote (notion)
+
+# todo
+- It does not work well with threading. 
+    > does not make it extremely faster and I think the reason is global things
+- Memory leaks might be happening

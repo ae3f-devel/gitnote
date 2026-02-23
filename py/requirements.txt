@@ -1,2 +1,0 @@
-notion-client>=2.2.1
-markdown2>=2.4.0
