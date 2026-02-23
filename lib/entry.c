@@ -144,9 +144,6 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		CONTEXT.m_is_alloc_lsfiles = 1;
 	}
 
-	puts(BUF_LSFILES);
-
-
 	/****************************************************************************/
 	{
 		const size_t	LEN_LSFILES = strlen(BUF_LSFILES);

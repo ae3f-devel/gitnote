@@ -32,6 +32,7 @@ int main(int argc, const char** argv);
 
 int main(int argc, const char** argv) {
 	typedef const char* const_str_t;
+	enum GITNOTE_	STAT;
 
 	const_str_t 
 		BRANCH = ""
@@ -102,7 +103,7 @@ LBL_DEFAULT:
 	puts(NOTION_ROOT_PAGE_ID);
 	puts(VENV);
 
-	return (int)gitnote_entry(
+	STAT = gitnote_entry(
 			BRANCH
 			, BEGIN_COMMIT
 			, BREAKPOINT_COMMIT
@@ -112,4 +113,6 @@ LBL_DEFAULT:
 			, VENV
 			);
 
+	printf("STAT: %d\n", (int)STAT);
+	return (int)STAT;
 }

@@ -35,9 +35,9 @@ ae2f_extern GITNOTE_ABI_IMPL int gitnote_pyglue_init(
 		free(VENV_PY);
 	}
 
-	config.use_environment = 0;
-	config.dev_mode = 0;
-	config.verbose = 0;
+	config.use_environment = 1;
+	config.dev_mode = 1;
+	config.verbose = 1;
 
 	PyImport_AppendInittab("utils", PyInit_utils);
 

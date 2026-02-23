@@ -24,8 +24,13 @@ PyObject* gitnote_get_notion_client(const char *api_key) {
 		unless(__pyx_mstate_global) assert(!"global non-initialised");
 		/** at least global thing is okay. */
 		unless(__pyx_mstate_global->__pyx_n_u_Client) assert(!"global non-initialised: __pyx_n_u_Client");
+		unless(__pyx_f_5utils_init_notion_client) {
+			PyErr_Print();
+			assert(!"Cython function not available");
+		}
 
-		__pyx_f_5utils_init_notion_client(PyUnicode_FromString(api_key), 0);
+
+		client = __pyx_f_5utils_init_notion_client(PyUnicode_FromString(api_key), 0);
 	}
 	return client;
 }
