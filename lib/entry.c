@@ -4,10 +4,10 @@
 #include <gitnote/enum.h>
 #include <gitnote/pyglue.h>
 #include <gitnote/snap.h>
+#include <gitnote/tdpool.h>
 
 #include "./util/assert_unless.h"
 #include "./util/rdallfp.h"
-#include "./util/tdpool.h"
 
 #include "./cfg/.TMPFILE_NAME.h"
 #include "./cfg/.HASH_LENGTH.h"
@@ -152,6 +152,13 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 
 		CONTEXT.m_is_alloc_lsfiles = 1;
 	}
+
+	puts("********************************");
+	fputs(BEG, stdout);
+	fputs("..", stdout);
+	puts(BREAKPOINT);
+	puts(BUF_LSFILES);
+	puts("********************************");
 
 	/****************************************************************************/
 	{

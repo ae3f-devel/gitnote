@@ -16,6 +16,7 @@
 #define	assrtunless	assert_unless
 static PyObject *__client = NULL;
 
+
 ae2f_extern GITNOTE_ABI_IMPL int gitnote_pyglue_init(
 		const char* const rd_venv,
 		const char* const rd_api
@@ -147,7 +148,9 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 	PyObject *py_parent_id;
 	PyObject *py_filepath;
 
-	GITNOTE_PYGIL_ENTER();
+	fputs("A	", stdout);
+	puts(rd_path);
+
 
 	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
@@ -214,10 +217,6 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 	Py_DECREF(py_root_id);
 	Py_DECREF(py_filepath);
 
-	fputs("A	", stdout);
-	puts(rd_path);
-
-	GITNOTE_PYGIL_EXIT();
 	return GITNOTE_SUCCESS;
 }
 
@@ -226,13 +225,13 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path
 		) {
-	GITNOTE_PYGIL_DECLARE;
 	PyObject *client;
 	PyObject *result;
 	PyObject *py_root_id;
 	PyObject *py_path;
 
-	GITNOTE_PYGIL_ENTER();
+	fputs("D	", stdout);
+	puts(rd_path);
 
 	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
@@ -262,10 +261,6 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 	Py_DECREF(py_path);
 	Py_DECREF(py_root_id);
 
-	fputs("D	", stdout);
-	puts(rd_path);
-
-	GITNOTE_PYGIL_EXIT();
 	return GITNOTE_SUCCESS;
 }
 
@@ -274,7 +269,6 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path
 		) {
-	GITNOTE_PYGIL_DECLARE;
 	PyObject *client;
 	PyObject *result;
 	PyObject *content;
@@ -283,15 +277,21 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 	PyObject *py_path;
 	PyObject *py_filepath;
 
-	GITNOTE_PYGIL_ENTER();
+	fputs("M	", stdout);
+	puts(rd_path);
 
 	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
 	py_path = PyUnicode_FromString(rd_path);
 	py_filepath = PyUnicode_FromString(rd_path);
 
-	result = __pyx_pf_5utils_6find_page_by_path(
-			NULL, client, py_root_id, py_path, Py_False);
+	result = __pyx_pf_5utils_10create_page_by_path(
+			NULL
+			, client
+			, py_root_id
+			, py_path
+			, Py_False
+			, Py_False);
 
 	if (result && result != Py_None) {
 		PyObject *page_id = result;
@@ -313,9 +313,5 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 	Py_DECREF(py_path);
 	Py_DECREF(py_root_id);
 
-	fputs("M	", stdout);
-	puts(rd_path);
-
-	GITNOTE_PYGIL_EXIT();
 	return GITNOTE_SUCCESS;
 }

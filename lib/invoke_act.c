@@ -1,9 +1,10 @@
 #include <gitnote.h>
+#include <gitnote/tdpool.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
-#include "util/tdpool.h"
 #include "util/assert_unless.h"
 
 #include <ae2f/Sys/Thrd.h>

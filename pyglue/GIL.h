@@ -3,7 +3,7 @@
 #include <Python.h>
 
 #define GITNOTE_PYGIL_DECLARE PyGILState_STATE _gitnote_gilstate
-#if	0
+#if	1
 #define GITNOTE_PYGIL_ENTER() _gitnote_gilstate = PyGILState_Ensure()
 #define GITNOTE_PYGIL_EXIT() PyGILState_Release(_gitnote_gilstate)
 #else
