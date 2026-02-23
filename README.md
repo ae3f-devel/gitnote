@@ -30,3 +30,4 @@
 - It does not work well with threading. 
     > does not make it extremely faster and I think the reason is global things
 - Memory leaks might be happening
+- .gitignore is not detected properly
