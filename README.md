@@ -24,6 +24,7 @@
 # what will happen
 - the `page id` you've fed to this programme will be directory page.
 - inside this, the repository will be cloned to the remote (notion)
+- It will automatically try fetching (remote)/.git to get the commit hash, and sync the changes from your local to remote(notion).
 
 # todo
 - It does not work well with threading. 
