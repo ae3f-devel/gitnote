@@ -33,7 +33,7 @@ PyObject* gitnote_get_notion_client(const char *api_key) {
 	return client;
 }
 
-ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
+GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path
@@ -41,17 +41,21 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 	GITNOTE_PYGIL_DECLARE;
 	PyObject *client;
 	PyObject *result;
+	PyObject *content;
+	PyObject *file_type;
 	const char *filename;
 	const char *dir_path;
 	PyObject *py_filename;
 	PyObject *py_dir_path;
 	PyObject *py_root_id;
 	PyObject *py_parent_id;
+	PyObject *py_filepath;
 
 	GITNOTE_PYGIL_ENTER();
 
 	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
+	py_filepath = PyUnicode_FromString(rd_path);
 	assert(py_root_id);
 
 	filename = strrchr(rd_path, '/');
@@ -84,11 +88,35 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 	if (!result) {
 		PyErr_Print();
 		fprintf(stderr, "Error: create_page_by_path returned NULL for '%s'\n", filename);
+	} else {
+		PyObject *page_id = result;
+		if (PyTuple_Check(result)) {
+			page_id = PyTuple_GetItem(result, 0);
+		}
+
+		content = __pyx_pf_5utils_25read_file_content(NULL, py_filepath);
+		file_type = __pyx_pf_5utils_12detect_file_type(NULL, py_filepath);
+
+		if (content && file_type) {
+			__pyx_pf_5utils_23update_page_content(
+					NULL
+					, client
+					, page_id
+					, content
+					, file_type
+					,Py_False
+					, py_filepath
+					, py_root_id
+					);
+
+			Py_DECREF(content);
+			Py_DECREF(file_type);
+		}
 	}
 
-	assert(py_filename);
 	Py_DECREF(py_filename);
 	Py_DECREF(py_root_id);
+	Py_DECREF(py_filepath);
 
 	fputs("A	", stdout);
 	puts(rd_path);
@@ -115,10 +143,24 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 	py_path = PyUnicode_FromString(rd_path);
 
 	result = __pyx_pf_5utils_6find_page_by_path(
-			NULL, client, py_root_id, py_path, Py_False);
+			NULL
+			, client
+			, py_root_id
+			, py_path
+			, Py_False
+			);
 
 	if (result && result != Py_None) {
-		__pyx_pf_5utils_21archive_page_recursive(NULL, client, result, Py_False);
+		PyObject *page_id = result;
+		if (PyTuple_Check(result)) {
+			page_id = PyTuple_GetItem(result, 0);
+		}
+		__pyx_pf_5utils_21archive_page_recursive(
+				NULL
+				, client
+				, page_id
+				, Py_False
+				);
 	}
 
 	Py_DECREF(py_path);
@@ -131,7 +173,7 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 	return GITNOTE_SUCCESS;
 }
 
-ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
+GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const char* const rd_path
@@ -156,11 +198,15 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 			NULL, client, py_root_id, py_path, Py_False);
 
 	if (result && result != Py_None) {
+		PyObject *page_id = result;
+		if (PyTuple_Check(result)) {
+			page_id = PyTuple_GetItem(result, 0);
+		}
 		content = __pyx_pf_5utils_25read_file_content(NULL, py_filepath);
 		file_type = __pyx_pf_5utils_12detect_file_type(NULL, py_filepath);
 
 		__pyx_pf_5utils_23update_page_content(
-				NULL, client, result, content, file_type,
+				NULL, client, page_id, content, file_type,
 				Py_False, py_filepath, py_root_id);
 
 		Py_DECREF(content);
