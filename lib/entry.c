@@ -3,6 +3,7 @@
 #include <gitnote.h>
 #include <gitnote/enum.h>
 #include <gitnote/pyglue.h>
+#include <gitnote/snap.h>
 
 #include "./util/assert_unless.h"
 #include "./util/rdallfp.h"
@@ -69,25 +70,29 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		strncpy(BEG, rd_begin, CFG_HASH_LENGTH);
 	}
 	else {
-		/** FIXME */
 		const char* ARGS[] = { "rev-list", "--max-parents=0", 0 };
 		char*	BUF;
 
-		ARGS[2] = BRANCH.m_str;
+		gitnote_snap_t	SNAP = gitnote_get_snap(rd_notion_api_key, rd_notion_page_id);
 
-		ae2f_expected_but_else(BUF = gitnote_get_default(
-				CFG_TMPFILE_NAME
-				, "git"
-				, sizeof(ARGS) / sizeof(ARGS[0])
-				, ARGS
-				)) jmpret(GITNOTE_ALLOC_FAILED);
+		unless(SNAP.m_handle && SNAP.m_hash && SNAP.m_hash[0]) {
+			ARGS[2] = BRANCH.m_str;
+			ae2f_expected_but_else(BUF = gitnote_get_default(
+						CFG_TMPFILE_NAME
+						, "git"
+						, sizeof(ARGS) / sizeof(ARGS[0])
+						, ARGS
+						)) jmpret(GITNOTE_ALLOC_FAILED);
 
-		strncpy(BEG, BUF, CFG_HASH_LENGTH);
-		strtok(BEG, "\n");
-
-		free(BUF);
-
-		c_flags & GITNOTE_OPT_INIT && (CONTEXT.m_is_naked = 1);
+			strncpy(BEG, BUF, CFG_HASH_LENGTH);
+			strtok(BEG, "\n");
+			free(BUF);
+			c_flags & GITNOTE_OPT_INIT && (CONTEXT.m_is_naked = 1);
+		} else {
+			ARGS[2] = BRANCH.m_str;
+			strncpy(BEG, SNAP.m_hash, CFG_HASH_LENGTH);
+			gitnote_free_snap(SNAP);
+		}
 	}
 
 
@@ -161,6 +166,8 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 			TOKEN = strtok(ae2f_NIL, "\n");
 		}
 	}
+
+	gitnote_set_snap(rd_notion_api_key, rd_notion_page_id, BREAKPOINT);
 
 LBL_NONGOOD:
 	if(CONTEXT.m_is_alloc_branch)	free(BRANCH.m_buf);

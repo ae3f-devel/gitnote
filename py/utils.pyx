@@ -735,3 +735,24 @@ cpdef markdown_to_notion_blocks(markdown_content, filepath=None, root_page_id=No
         )
 
     return blocks
+
+
+cpdef str get_snap(client, root_page_id, verbose=False):
+    """Get commit hash from .git page"""
+    result = find_page_by_path(client, root_page_id, ".git", verbose)
+    if not result:
+        return None
+    page_id = result[0] if isinstance(result, tuple) else result
+    content = get_page_content(client, page_id, verbose)
+    return content.strip() if content else None
+
+cpdef int set_snap(client, root_page_id, commit_hash, verbose=False):
+    """Set commit hash to .git page, returns 0 on success"""
+    result = find_page_by_path(client, root_page_id, ".git", verbose)
+    if result:
+        page_id = result[0] if isinstance(result, tuple) else result
+    else:
+        page_id = create_page_by_path(client, root_page_id, ".git", is_dir=False, verbose=verbose)
+    
+    update_page_content(client, page_id, commit_hash, ("paragraph", None), verbose)
+    return 0

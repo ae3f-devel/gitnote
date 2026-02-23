@@ -25,8 +25,10 @@ ae2f_extern GITNOTE_ABI_IMPL int gitnote_pyglue_init(
 		strcpy(VENV_PY, rd_venv);
 		strcat(VENV_PY, "/bin/python");
 
-		status = PyConfig_SetBytesString(&config, &config.executable,
-				VENV_PY);
+		status = PyConfig_SetBytesString(
+				&config
+				, &config.executable
+				, VENV_PY);
 		if (PyStatus_Exception(status)) {
 			free(VENV_PY);
 			goto done;

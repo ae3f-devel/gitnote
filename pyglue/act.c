@@ -10,7 +10,7 @@
 #include <utils.h>
 #include "./GIL.h"
 #include <assert.h>
-
+#include <gitnote/snap.h>
 
 PyObject* gitnote_get_notion_client(const char *api_key) {
 	static PyObject *client = NULL;
@@ -31,6 +31,54 @@ PyObject* gitnote_get_notion_client(const char *api_key) {
 
 	assert(client);
 	return client;
+}
+
+GITNOTE_ABI_IMPL int gitnote_set_snap(const char* const rd_api, const char* const rd_pgid, const char* const rd_hash) 
+{
+	PyObject* API = PyUnicode_FromString(rd_api);
+	PyObject* PGID = PyUnicode_FromString(rd_pgid);
+	PyObject* CLIENT = gitnote_get_notion_client(rd_api);
+	PyObject* HASH = PyUnicode_FromString(rd_hash);
+
+	const int RET = __pyx_f_5utils_set_snap(
+			CLIENT
+			, PGID
+			, HASH
+			, 0
+			, 0);
+
+	Py_DECREF(API);
+	Py_DECREF(PGID);
+	Py_DECREF(CLIENT);
+	Py_DECREF(HASH);
+
+	return RET;
+}
+
+GITNOTE_ABI_IMPL void gitnote_free_snap(gitnote_snap_t d) {
+	Py_DECREF(d.m_handle);
+}
+
+GITNOTE_ABI_IMPL gitnote_snap_t gitnote_get_snap(
+		const char* const rd_api
+		, const char* const rd_pgid
+		)
+{
+	PyObject* API = PyUnicode_FromString(rd_api);
+	PyObject* PGID = PyUnicode_FromString(rd_pgid);
+	PyObject* CLIENT = gitnote_get_notion_client(rd_api);
+	PyObject* HASH = __pyx_f_5utils_get_snap(
+			CLIENT
+			, PGID
+			, 0
+			, 0
+			);
+
+	gitnote_snap_t	RET;
+
+	RET.m_handle = HASH;
+	RET.m_hash = PyUnicode_AsUTF8(HASH);
+	return RET;
 }
 
 GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
