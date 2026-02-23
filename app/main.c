@@ -1,5 +1,6 @@
 #include <gitnote.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 enum ARG_ {
 	ARG_PROGRAMME,
@@ -12,6 +13,7 @@ enum ARG_ {
 	ARG_VENV,
 	ARG_BEGIN_COMMIT,
 	ARG_BREAKPOINT_COMMIT,
+	ARG_TDCOUNT
 };
 
 enum ARGC_ {
@@ -26,6 +28,7 @@ enum ARGC_ {
 	ARGC_VENV,
 	ARGC_BEGIN_COMMIT,
 	ARGC_BREAKPOINT_COMMIT,
+	ARGC_TDCOUNT
 };
 
 int main(int argc, const char** argv);
@@ -33,6 +36,8 @@ int main(int argc, const char** argv);
 int main(int argc, const char** argv) {
 	typedef const char* const_str_t;
 	enum GITNOTE_	STAT;
+
+	int		THREAD_COUNT = 10;
 
 	const_str_t 
 		BRANCH = ""
@@ -57,9 +62,15 @@ LBL_DEFAULT:
 				"<--help|--init|{branch}|{null}> "
 				"<{venv}|{null}> "
 				"<{begin_commit}|{null}> "
-				"<{breakpoint}|{null}>"
+				"<{breakpoint}|{null}> "
+				"<{thread_count}|{null}>"
 		    );
 		return 0;
+
+		case ARGC_TDCOUNT:
+		THREAD_COUNT = atoi(argv[ARG_TDCOUNT]);
+		if(THREAD_COUNT < 0) THREAD_COUNT = 1;
+		ae2f_fallthrough;
 
 		case ARGC_BREAKPOINT_COMMIT:
 		BREAKPOINT_COMMIT = argv[ARG_BREAKPOINT_COMMIT];
@@ -107,6 +118,7 @@ LBL_DEFAULT:
 			, NOTION_ROOT_PAGE_ID
 			, GITNOTE_OPT
 			, VENV
+			, (unsigned)THREAD_COUNT
 			);
 
 	printf("STAT: %d\n", (int)STAT);

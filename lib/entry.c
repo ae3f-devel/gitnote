@@ -7,6 +7,7 @@
 
 #include "./util/assert_unless.h"
 #include "./util/rdallfp.h"
+#include "./util/tdpool.h"
 
 #include "./cfg/.TMPFILE_NAME.h"
 #include "./cfg/.HASH_LENGTH.h"
@@ -19,7 +20,8 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const B_gitnote_option_t	c_flags,
-		const char* const rd_venv
+		const char* const		rd_venv,
+		unsigned			c_count_threads
 		)
 {
 	struct {
@@ -46,9 +48,11 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 	assert_unless(rd_breakpoint)		return GITNOTE_NULL_ARG;
 	assert_unless(rd_venv)			return GITNOTE_NULL_ARG;
 
-	if(gitnote_pyglue_init(rd_venv))
+	if(gitnote_pyglue_init(rd_venv, rd_notion_api_key))
 		return GITNOTE_PYINIT_FAILED;
 
+	if(gitnote_alloc_tdpool(c_count_threads))
+		return GITNOTE_THREAD_FAILED;
 
 	unless(*(BRANCH.m_str = rd_branch_name))	{
 		const char* ARGS[] = { "rev-parse", "--abbrev-ref", "HEAD" };
@@ -168,6 +172,7 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 	}
 
 	gitnote_set_snap(rd_notion_api_key, rd_notion_page_id, BREAKPOINT);
+	gitnote_tdpool_join();
 
 LBL_NONGOOD:
 	if(CONTEXT.m_is_alloc_branch)	free(BRANCH.m_buf);

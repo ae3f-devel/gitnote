@@ -48,6 +48,7 @@ if(NOT TARGET ae3f::gitnote)
 		${CMAKE_CURRENT_SOURCE_DIR}/lib/cfg/.TMPFILE_NAME.h
 		)
 
+	ae2f_CoreLibFetchX(ae2f Sys main)
 	ae2f_CoreLibFetchX_DNS(ae3f ae3f easyredir master codeberg.org)
 	
 	#######################################################################
@@ -123,7 +124,10 @@ if(NOT TARGET ae3f::gitnote)
 	add_executable(gitnote-raw app/main.c ${libgitnote_sources})
 	add_executable(ae3f::gitnote-raw ALIAS gitnote-raw)
 
-	target_link_libraries(gitnote-common		INTERFACE ae3f::libeasyredir)
+	target_link_libraries(gitnote-common INTERFACE 
+		ae3f::libeasyredir
+		ae2f::Sys
+		)
 	target_link_libraries(gitnote-raw PRIVATE libgitnote)
 	target_link_libraries(libgitnote PRIVATE gluegitnote)
 

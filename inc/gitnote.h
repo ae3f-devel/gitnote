@@ -44,7 +44,8 @@ ae2f_extern GITNOTE_ABI_DECL enum GITNOTE_ gitnote_entry(
 		const char* ae2f_restrict const rd_notion_api_key,
 		const char* ae2f_restrict const rd_notion_page_id,
 		const B_gitnote_option_t	c_flags,
-		const char* const rd_venv
+		const char* const		rd_venv,
+		unsigned			c_count_threads
 		);
 
 /** get default branch */

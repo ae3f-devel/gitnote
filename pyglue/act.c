@@ -12,25 +12,73 @@
 #include <assert.h>
 #include <gitnote/snap.h>
 
-PyObject* gitnote_get_notion_client(const char *api_key) {
-	static PyObject *client = NULL;
-	assert(Py_IsInitialized());
-	if (!client) {
-		PyImport_ImportModule("utils");
-		unless(__pyx_mstate_global) assert(!"global non-initialised");
-		/** at least global thing is okay. */
-		unless(__pyx_mstate_global->__pyx_n_u_Client) assert(!"global non-initialised: __pyx_n_u_Client");
-		unless(__pyx_f_5utils_init_notion_client) {
-			PyErr_Print();
-			assert(!"Cython function not available");
+#define	assert_unless(A) assert(A); ae2f_expected_but_else(A)
+#define	assrtunless	assert_unless
+static PyObject *__client = NULL;
+
+ae2f_extern GITNOTE_ABI_IMPL int gitnote_pyglue_init(
+		const char* const rd_venv,
+		const char* const rd_api
+		) {
+	PyStatus status;
+
+	PyConfig config;
+	PyConfig_InitPythonConfig(&config);
+
+	{
+		const size_t VENV_LEN	= strlen(rd_venv);
+		char* VENV_PY		= malloc(VENV_LEN + sizeof("/bin/python"));
+		ae2f_expected_but_else(VENV_PY) goto done;
+		strcpy(VENV_PY, rd_venv);
+		strcat(VENV_PY, "/bin/python");
+
+		status = PyConfig_SetBytesString(
+				&config
+				, &config.executable
+				, VENV_PY);
+		if (PyStatus_Exception(status)) {
+			free(VENV_PY);
+			goto done;
 		}
 
-
-		client = __pyx_f_5utils_init_notion_client(PyUnicode_FromString(api_key), 0);
+		free(VENV_PY);
 	}
 
-	assert(client);
-	return client;
+	config.use_environment = 1;
+	config.dev_mode = 1;
+	config.verbose = 1;
+
+	PyImport_AppendInittab("utils", PyInit_utils);
+
+	status = Py_InitializeFromConfig(&config);
+
+	assert(Py_IsInitialized());
+
+	puts("GOOD");
+	PyConfig_Clear(&config);
+
+	PyImport_ImportModule("utils");
+	unless(__pyx_mstate_global) assert(!"global non-initialised");
+	/** at least global thing is okay. */
+	unless(__pyx_mstate_global->__pyx_n_u_Client) assert(!"global non-initialised: __pyx_n_u_Client");
+	unless(__pyx_f_5utils_init_notion_client) {
+		PyErr_Print();
+		assert(!"Cython function not available");
+	}
+
+
+	__client = __pyx_f_5utils_init_notion_client(PyUnicode_FromString(rd_api), 0);
+
+	return 0;
+done:
+	assert(!"asdf");
+	PyConfig_Clear(&config);
+	return 0;
+}
+
+
+PyObject* gitnote_get_notion_client(const char *api_key) {
+	return __client;
 }
 
 GITNOTE_ABI_IMPL int gitnote_set_snap(const char* const rd_api, const char* const rd_pgid, const char* const rd_hash) 

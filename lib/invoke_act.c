@@ -3,8 +3,11 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "gitnote/enum.h"
+#include "util/tdpool.h"
 #include "util/assert_unless.h"
+
+#include <ae2f/Sys/Thrd.h>
+
 
 GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 		const char* ae2f_restrict const rd_notion_api_key,
@@ -34,15 +37,18 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 
 			*TOKEN = 0;
 			*TOKEN2 = 0;
-			ae2f_unexpected_but_if(ERR = gitnote_act_rm(
-						rd_notion_api_key
+
+			ae2f_unexpected_but_if(
+					ERR = gitnote_tdpool_push(gitnote_act_rm
+						, rd_notion_api_key
 						, rd_notion_page_id
 						, TOKEN + 1))
 				return ERR;
 
 
-			return gitnote_act_creat(
-					rd_notion_api_key
+			return 	gitnote_tdpool_push(
+					gitnote_act_creat
+					, rd_notion_api_key
 					, rd_notion_page_id
 					, TOKEN2 + 1);
 		}
@@ -52,8 +58,9 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRSTR_FAILED;
 
-			return gitnote_act_rm(
-					rd_notion_api_key
+			return 	gitnote_tdpool_push(
+					gitnote_act_rm
+					, rd_notion_api_key
 					, rd_notion_page_id
 					, TOKEN + 1);
 		}
@@ -62,18 +69,21 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRSTR_FAILED;
 
-			return gitnote_act_creat(
-					rd_notion_api_key
+			return 	gitnote_tdpool_push(
+					gitnote_act_creat
+					, rd_notion_api_key
 					, rd_notion_page_id
 					, TOKEN + 1);
+
 		}
 		case 'M':
 		{
 			ae2f_expected_but_else(TOKEN = strstr(rdwr_tok, "\t"))
 				return GITNOTE_STRTOK_FAILED;
 
-			return gitnote_act_mod(
-					rd_notion_api_key
+			return 	gitnote_tdpool_push(
+					gitnote_act_mod
+					, rd_notion_api_key
 					, rd_notion_page_id
 					, TOKEN + 1);
 		}
