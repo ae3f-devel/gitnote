@@ -113,9 +113,6 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		strtok(BREAKPOINT, "\n");
 	}
 
-
-
-
 	/************************************************************************/
 
 	if(CONTEXT.m_is_naked) {
@@ -147,11 +144,14 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_entry(
 		CONTEXT.m_is_alloc_lsfiles = 1;
 	}
 
+	puts(BUF_LSFILES);
+
 
 	/****************************************************************************/
 	{
+		const size_t	LEN_LSFILES = strlen(BUF_LSFILES);
 		char* ae2f_restrict TOKEN = strtok(BUF_LSFILES, "\n");
-		while (TOKEN)
+		while (TOKEN && TOKEN < LEN_LSFILES + BUF_LSFILES)
 		{
 			ae2f_unexpected_but_if((STATE_ON_ERR = gitnote_invoke_act(
 							rd_notion_api_key

@@ -1,3 +1,7 @@
+#include <ae2f/cc.h>
+
+#define main ae2f_inline __pymain
+
 #include <gitnote.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,14 +9,25 @@
 #include <easyredir.h>
 #include <utils.h>
 #include "./GIL.h"
+#include <assert.h>
 
-static PyObject* _get_notion_client(const char *api_key) {
-    static PyObject *client = NULL;
-    assert(Py_IsInitialized());
-    if (!client) {
-        client = __pyx_pf_5utils_init_notion_client(NULL, PyUnicode_FromString(api_key));
-    }
-    return client;
+
+PyObject* gitnote_get_notion_client(const char *api_key) {
+	static PyObject *client = NULL;
+	assert(Py_IsInitialized());
+	if (!client) {
+		__Pyx_InitGlobals();
+		__Pyx_InitConstants(__pyx_mstate_global);
+		__Pyx_InitCachedBuiltins(__pyx_mstate_global);
+
+		PyImport_ImportModule("utils");
+		unless(__pyx_mstate_global) assert(!"global non-initialised");
+		/** at least global thing is okay. */
+		unless(__pyx_mstate_global->__pyx_n_u_Client) assert(!"global non-initialised: __pyx_n_u_Client");
+
+		__pyx_f_5utils_init_notion_client(PyUnicode_FromString(api_key), 0);
+	}
+	return client;
 }
 
 ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
@@ -32,7 +47,7 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 
 	GITNOTE_PYGIL_ENTER();
 
-	client = _get_notion_client(rd_notion_api_key);
+	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
 
 	filename = strrchr(rd_path, '/');
@@ -45,8 +60,8 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 		free(dir);
 
 		result = __pyx_pf_5utils_6create_page_by_path(
-			NULL, client, py_root_id, py_dir_path,
-			Py_True, Py_False);
+				NULL, client, py_root_id, py_dir_path,
+				Py_True, Py_False);
 		Py_DECREF(py_dir_path);
 
 		py_parent_id = result;
@@ -58,8 +73,8 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_creat(
 
 	py_filename = PyUnicode_FromString(filename);
 	result = __pyx_pf_5utils_6create_page_by_path(
-		NULL, client, py_parent_id, py_filename,
-		Py_False, Py_False);
+			NULL, client, py_parent_id, py_filename,
+			Py_False, Py_False);
 
 	Py_DECREF(py_filename);
 	Py_DECREF(py_root_id);
@@ -84,12 +99,12 @@ GITNOTE_ABI_DECL enum GITNOTE_ gitnote_act_rm(
 
 	GITNOTE_PYGIL_ENTER();
 
-	client = _get_notion_client(rd_notion_api_key);
+	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
 	py_path = PyUnicode_FromString(rd_path);
 
 	result = __pyx_pf_5utils_2find_page_by_path(
-		NULL, client, py_root_id, py_path, Py_False);
+			NULL, client, py_root_id, py_path, Py_False);
 
 	if (result && result != Py_None) {
 		__pyx_pf_5utils_14archive_page_recursive(NULL, client, result, Py_False);
@@ -121,21 +136,21 @@ ae2f_extern GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_act_mod(
 
 	GITNOTE_PYGIL_ENTER();
 
-	client = _get_notion_client(rd_notion_api_key);
+	client = gitnote_get_notion_client(rd_notion_api_key);
 	py_root_id = PyUnicode_FromString(rd_notion_page_id);
 	py_path = PyUnicode_FromString(rd_path);
 	py_filepath = PyUnicode_FromString(rd_path);
 
 	result = __pyx_pf_5utils_2find_page_by_path(
-		NULL, client, py_root_id, py_path, Py_False);
+			NULL, client, py_root_id, py_path, Py_False);
 
 	if (result && result != Py_None) {
 		content = __pyx_pf_5utils_18read_file_content(NULL, py_filepath);
 		file_type = __pyx_pf_5utils_8detect_file_type(NULL, py_filepath);
 
 		__pyx_pf_5utils_16update_page_content(
-			NULL, client, result, content, file_type,
-			Py_False, py_filepath, py_root_id);
+				NULL, client, result, content, file_type,
+				Py_False, py_filepath, py_root_id);
 
 		Py_DECREF(content);
 		Py_DECREF(file_type);

@@ -53,8 +53,8 @@ int main(int argc, const char** argv) {
 		case ARGC_PROGRAMME:
 LBL_DEFAULT:
 		puts("./gitnote <notion-api-key> <notion-page-id-root> "
-				"<--help|{venv}|{null}> "
-				"<{branch}|{null}> "
+				"<--help|{branch}|{null}> "
+				"<{venv}|{null}> "
 				"<{begin_commit}|{null}> "
 				"<{breakpoint}|{null}>"
 		    );

@@ -1,7 +1,9 @@
 #include <gitnote.h>
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
+#include "gitnote/enum.h"
 #include "util/assert_unless.h"
 
 GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
@@ -76,7 +78,13 @@ GITNOTE_ABI_IMPL enum GITNOTE_ gitnote_invoke_act(
 					, TOKEN + 1);
 		}
 		default:
-		assert(0);
+		printf("[gitnote]: Met unexpected: %c[%d]\n", *rdwr_tok, (int)*rdwr_tok);
+		puts("=============");
+		puts("");
+		puts(rdwr_tok);
+		puts("");
+		puts("=============");
+		return GITNOTE_MET_UNEXPECTED;
 	}
 
 	return GITNOTE_SUCCESS;

@@ -2,12 +2,14 @@ import os
 import sys
 from setuptools import setup
 from Cython.Build import cythonize
+from Cython.Compiler import Options
 
 
 from distutils.sysconfig import get_config_var
 from setuptools.command.build_ext import build_ext as _build_ext
 
 build_dir = os.environ.get("TARDIR", ".")
+Options.embed = "main"
 
 
 

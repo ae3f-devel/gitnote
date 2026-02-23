@@ -23,11 +23,12 @@ ae2f_inline static char* ae2f_retnew util_rdallfp(const char* rd_path) {
 
 	fseek(F, 0, SEEK_END);
 	ae2f_expected_but_else(RET = (LEN.m_ftell = ftell(F)) < 0 ? 
-			ae2f_NIL : malloc((size_t)LEN.m_ftell + 3))
+			ae2f_NIL : malloc((size_t)LEN.m_ftell + 1))
 		goto LBL_DOOMALL;
 
 	fseek(F, 0, SEEK_SET);
-	LEN.m_read = fread(RET, 1, (size_t)LEN.m_ftell + 3, F);
+	LEN.m_read = fread(RET, 1, (size_t)LEN.m_ftell, F);
+	RET[LEN.m_ftell] = 0;
 
 	fclose(F);
 	return	RET;
